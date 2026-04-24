@@ -5,5 +5,4 @@ __pycache__/
 *.faiss
 venv/
 .streamlit/secrets.toml
-embeddings/
 data/
