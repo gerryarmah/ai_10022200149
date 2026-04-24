@@ -180,6 +180,8 @@ Data sources → Chunker → Embedder → FAISS Index (saved to disk)
 **Online Phase (query time):**
 User Query → Query Expansion → FAISS Retrieval → Context Selection → Prompt → Groq LLM → Response
 
+![RAG Architecture Diagram](architecture.png)
+
 ### Why This Design is Suitable:
 - Pre-building the index means query response time is fast (under 3 seconds)
 - FAISS IndexFlatIP is suitable for datasets under 100k vectors — our 1737 vectors are well within range
