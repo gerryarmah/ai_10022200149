@@ -12,8 +12,13 @@ st.markdown("Chat with Ghana Election Results & 2025 Budget data")
 
 @st.cache_resource
 def load_or_build():
-    index_path = os.path.join("embeddings", "index.faiss")
-    if os.path.exists(index_path):
+    possible_paths = [
+        os.path.join(os.path.dirname(os.path.abspath(__file__)), "embeddings", "index.faiss"),
+        os.path.join("embeddings", "index.faiss"),
+        "embeddings/index.faiss"
+    ]
+    index_exists = any(os.path.exists(p) for p in possible_paths)
+    if index_exists:
         return load_index()
     else:
         st.info("Building index for first time, please wait...")
