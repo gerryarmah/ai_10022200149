@@ -3,6 +3,31 @@ import streamlit as st
 from groq import Groq
 from retrieval import retrieve_with_expansion
 
+# Part G Innovation: Memory-based RAG
+# Stores past queries and answers to improve future responses
+
+conversation_memory = []
+
+def add_to_memory(query, answer):
+    """Store past Q&A pairs in memory."""
+    conversation_memory.append({
+        "query": query,
+        "answer": answer
+    })
+    # Keep only last 5 exchanges to avoid context overflow
+    if len(conversation_memory) > 5:
+        conversation_memory.pop(0)
+
+def get_memory_context():
+    """Format past conversation for injection into prompt."""
+    if not conversation_memory:
+        return ""
+    memory_str = "\n--- CONVERSATION HISTORY ---\n"
+    for i, mem in enumerate(conversation_memory):
+        memory_str += f"Q{i+1}: {mem['query']}\nA{i+1}: {mem['answer'][:200]}...\n"
+    memory_str += "--- END HISTORY ---\n"
+    return memory_str
+
 def get_groq_client():
     api_key = st.secrets["GROQ_API_KEY"]
     return Groq(api_key=api_key)
@@ -19,6 +44,7 @@ def select_context(results, max_chars=3000):
     return context, used
 
 def build_prompt(query, context):
+    memory = get_memory_context()
     return f"""You are an AI assistant for Academic City University.
 You help users understand Ghana election results and the 2025 Ghana Budget.
 
@@ -29,7 +55,7 @@ For election questions:
 - The candidate with the most total votes in the context is likely the winner
 - State which candidate had more votes based on the context provided
 Do NOT make up facts or figures not in the context.
-
+{memory}
 --- CONTEXT START ---
 {context}
 --- CONTEXT END ---
@@ -78,6 +104,9 @@ def run_rag(query, index, chunks, top_k=5, strict=False):
     answer = response.choices[0].message.content
     log_pipeline("response", answer, logs)
 
+    # Store in memory for future queries
+    add_to_memory(query, answer)
+    
     return answer, logs, used_chunks
 
 def run_pure_llm(query):
