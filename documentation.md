@@ -21,6 +21,7 @@ https://gerryarmah-ai-10022200149-app-nbz0fl.streamlit.app
 The system follows a standard RAG pipeline with custom enhancements:
 
 **User Query → Query Expansion → FAISS Retrieval → Context Selection → Prompt Construction → Groq LLM → Response**
+
 ![RAG Architecture Diagram](architecture.png)
 
 ### Components:
