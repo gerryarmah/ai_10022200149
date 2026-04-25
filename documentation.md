@@ -1,5 +1,5 @@
 # Project Documentation - Academic City RAG Assistant
-**Student:** Gerald Armah  
+**Student:** Gerald Nii Armah Amamoo  
 **Index Number:** 10022200149  
 **Course:** CS4241 - Introduction to Artificial Intelligence  
 **Lecturer:** Godwin N. Danso  
