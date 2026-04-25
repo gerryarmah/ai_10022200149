@@ -1,4 +1,4 @@
-# Experiment Logs - Gerald Armah (10022200149)
+# Experiment Logs - Gerald Nii Armah Amamoo(10022200149)
 # CS4241 - Introduction to Artificial Intelligence - 2026
 # These are manual experiment logs.
 
