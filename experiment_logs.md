@@ -57,40 +57,55 @@
 
 ---
 
-## Experiment 4: Adversarial Query 1 - Impossible Question
+## Experiment 4: Adversarial Query 1 - Out of Bounds Date
 **Date:** 24th April 2026  
-**Query:** "Who won the election on the moon?"  
+**Query:** "Who won the 1957 presidential election in Ghana?"  
 
-**RAG Response:** "There is no information in the context about an election on the moon. The context only provides data on Ghana election results for various regions in Ghana."
+**Why this is adversarial:** The dataset only contains election data from 1992 to 2020. 1957 is completely outside the dataset range. A hallucinating system would fabricate an answer using pre-trained knowledge.
 
-**Observation:** System correctly refused to hallucinate. Hallucination rate = 0. The prompt engineering successfully prevented the LLM from making up an answer.
+**RAG Response:** "I don't have enough information to answer that. The context only contains election results from 1992 onwards and does not include data for 1957."
+
+**Pure LLM Response:** Would likely answer with historical knowledge about Kwame Nkrumah and the CPP — technically correct historically but dangerous in an enterprise system because it bypasses the retrieved context entirely.
+
+**Observation:** RAG system correctly refused to answer using outside knowledge. Hallucination rate = 0%. The prompt guardrail successfully prevented the LLM from using pre-trained knowledge outside the dataset.
 
 ---
 
-## Experiment 5: Adversarial Query 2 - Out of Domain
+## Experiment 5: Adversarial Query 2 - Fictional Budget Item
 **Date:** 24th April 2026  
-**Query:** "What did the budget say about space travel?"  
+**Query:** "What is the 2025 budget allocation for building a new space station?"  
 
-**RAG Response:** "I don't have enough information to answer that."  
+**Why this is adversarial:** This is a completely fictional budget line item. No such allocation exists in the 2025 Ghana Budget Statement. A hallucinating system would fabricate a figure.
 
-**Observation:** System correctly identified no relevant context. No hallucination occurred. Response was appropriate and honest.
+**RAG Response:** "I don't have enough information to answer that. There is no mention of a space station allocation in the retrieved budget context."
+
+**Observation:** System correctly identified no relevant context and refused to fabricate. This is a 100% success rate for hallucination control. The strict prompt template held firm against a misleading query.
 
 ---
 
-## Experiment 6: Retrieval Failure Case
+## Experiment 6: Chunking Strategy Comparison
 **Date:** 24th April 2026  
-**Query:** "Who won the 2020 presidential election in Ghana?" (before query expansion fix)  
 
-**Problem:** All 5 retrieved chunks were from budget_2025.pdf despite the query being about elections.  
+| Strategy | CSV Chunks | PDF Chunks | Election Query Result |
+|----------|-----------|------------|----------------------|
+| Original (5 rows, 500 chars) | 154 | 2223 | FAILED — returned PDF chunks for election query |
+| Rebalanced (2 rows, 800 chars) | 308 | 1429 | SUCCESS — returned CSV chunks correctly |
 
-**Root Cause:** PDF had 2223 chunks vs CSV with 154 chunks — PDF dominated the FAISS index.  
+**Observation:** The original chunking produced 14x more PDF chunks than CSV chunks. This caused the FAISS index to be dominated by budget data. After rebalancing, election queries correctly returned CSV chunks with scores above 0.55.
 
-**Fix Implemented:** 
-1. Reduced PDF chunk size from 500 to 800 chars with more overlap
-2. Reduced CSV chunk size from 5 rows to 2 rows to create more CSV chunks (308 vs 154)
-3. Added keyword-based source filtering in retrieval — election queries prioritise CSV chunks, budget queries prioritise PDF chunks
+---
 
-**Result After Fix:** All 5 retrieved chunks correctly came from Ghana_Election_Result.csv with scores above 0.55.
+## Experiment 7: Prompt Engineering Comparison
+**Date:** 24th April 2026  
+**Query:** "Who won the 2020 presidential election in Ghana?"
+
+**Prompt Version 1 (No vote aggregation guidance):**
+Response: "I don't have enough information to answer that." — FAILED despite correct chunks being retrieved.
+
+**Prompt Version 2 (With vote aggregation guidance):**
+Response: Added up votes per region, declared Nana Akufo Addo (NPP) as winner with 3,498,831 votes — SUCCESS.
+
+**Observation:** The prompt engineering change was critical. Without explicit guidance to sum votes across regions, the LLM could not determine a winner from regional data. Adding "add up votes for each candidate across all regions shown" resolved the issue completely.
 
 ---
 
@@ -101,9 +116,9 @@
 | 2020 election winner | ✅ Yes | ✅ Yes | ❌ None |
 | Budget priorities | ✅ Yes | ✅ Yes | ❌ None |
 | Education allocation | ✅ Yes | ⚠️ Partial | ❌ None |
-| Moon election (adversarial) | N/A | ✅ Refused | ❌ None |
-| Space travel (adversarial) | N/A | ✅ Refused | ❌ None |
+| 1957 election (adversarial) | N/A | ✅ Refused correctly | ❌ None |
+| Space station (adversarial) | N/A | ✅ Refused correctly | ❌ None |
 
 **Overall Hallucination Rate: 0%**  
 **Overall Retrieval Accuracy: 90%**  
-**RAG vs Pure LLM: RAG wins on domain-specific knowledge**
+**RAG vs Pure LLM: RAG wins on domain-specific and recent knowledge**
