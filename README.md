@@ -2,7 +2,7 @@
 
 # Academic City RAG Assistant
 
-**Student Name:** Gerald Nii Armah Amamoo 
+**Student Name:** Gerald Nii Armah Amamoo  
 **Index Number:** 10022200149  
 **Course:** CS4241 - Introduction to Artificial Intelligence  
 **Lecturer:** Godwin N. Danso  
